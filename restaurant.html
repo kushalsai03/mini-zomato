@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url("https://portablepartitions.com.au/wp-content/uploads/2022/06/hotel-restaurant-design.jpg");
+            background-size: 100% 100%;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px; 
+        }
+        .restaurant {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.5); 
+            border-radius: 8px; 
+        }
+        header, footer {
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #444;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .restaurant {
+                padding: 5px;
+            }
+            button {
+                padding: 8px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><U>Restaurant Details</U></h1>
+        </header>
+        <div id="restaurant-details"></div>
+        <button onclick="goBack()" aria-label="Go back to restaurant list">Back to List</button>
+    </div>
+
+    <script>
+        async function fetchRestaurantDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+
+            if (!id) {
+                document.getElementById('restaurant-details').innerHTML = `<p>No restaurant ID provided.</p>`;
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/restaurants/${id}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const restaurant = await response.json();
+
+                if (restaurant.error) {
+                    document.getElementById('restaurant-details').innerHTML = `<p>${restaurant.error}</p>`;
+                } else {
+                    document.getElementById('restaurant-details').innerHTML = `
+                        <div class="restaurant">
+                            <h2>${restaurant['Restaurant Name']}</h2>
+                            <p><strong>City:</strong> ${restaurant['City']}</p>
+                            <p><strong>Address:</strong> ${restaurant['Address']}</p>
+                            <p><strong>Cuisines:</strong> ${restaurant['Cuisines']}</p>
+                            <p><strong>Average Cost for Two:</strong> ${restaurant['Average Cost for two']}</p>
+                            <p><strong>Rating:</strong> ${restaurant['Aggregate rating']} (${restaurant['Rating text']})</p>
+                            <p><strong>Has Table Booking:</strong> ${restaurant['Has Table booking']}</p>
+                            <p><strong>Has Online Delivery:</strong> ${restaurant['Has Online delivery']}</p>
+                            <p><strong>Is Delivering Now:</strong> ${restaurant['Is delivering now']}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error fetching restaurant details:', error);
+                document.getElementById('restaurant-details').innerHTML = `<p>Failed to fetch restaurant details: ${error.message}</p>`;
+            }
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        // Fetch the restaurant details when the page loads
+        fetchRestaurantDetails();
+    </script>
+</body>
+</html>

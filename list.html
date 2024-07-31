@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant List</title>
+    <link rel="stylesheet">
+    <style>
+        body { font-family: Arial, sans-serif;background-image: url("https://img.freepik.com/free-photo/top-view-tasty-cooked-chicken-spiced-up-with-potatoes-sliced-pepper-dark-background-meat-color-dish-dinner-meal-food-barbecue-free-space_179666-46646.jpg?size=626&ext=jpg&ga=GA1.1.2008272138.1721433600&semt=ais_user"); background-size: 95% 100%;
+        background-attachment: fixed;}
+        .container { max-width: 1200px; margin: auto; padding: 20px;position:absolute; left: 20%;}
+        .header { background-color: rgba(0,0,0,0.5); color: white; padding: 10px 0; text-align: center; width: 875px;}
+        .search-bar { position: relative;left:20%; margin-bottom: 20px;}
+        .search-bar input { width: 300px; padding: 10px; margin-right: 10px;margin-top: 10px; }
+        .search-bar button { padding: 10px; background-color: #333; color: white; border: none; cursor: pointer;margin-top: 10px; }
+        .restaurant-list { display: flex; flex-wrap: wrap; gap: 20px; }
+        .restaurant { border: 1px solid #ddd; padding: 20px; width: calc(33.333% - 20px); box-shadow: 0 0 10px rgba(0,0,0,0.1);  background: rgba(255, 255, 255, 0.2);background: rgba(255, 255, 255, 0.5);-webkit-backdrop-filter: blur(5px);backdrop-filter: blur(3px);}
+        .restaurant h2 { margin-top: 0; }
+        .restaurant p { margin: 5px 0; }
+        .pagination { text-align: center; margin: 20px 0; }
+        .pagination a { margin: 0 5px; text-decoration: none; color :black; padding: 5px 10px; border-radius: 5px; background-color: rgba(255, 255, 255, 0.5);-webkit-backdrop-filter: blur(5px); backdrop-filter: blur(3px);border: 1px solid #ddd;}
+        .pagination a.active { font-weight: bold; }
+        .pagination a.disabled { color: black; pointer-events: none; }
+        #back-to-list { display: none; margin: 20px 0; background-color: #333; color: white; padding: 10px; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <header class="header">
+            <h1><u>Restaurant List</u></h1>
+        </header>
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search for restaurants..." onkeydown="handleKeyDown(event)" />
+            <button onclick="searchRestaurants()">Search</button>
+        </div>
+        <button id="back-to-list" onclick="showList()">Back to List</button>
+        <div id="restaurant-list" class="restaurant-list"></div>
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const perPage = 10;
+        let searchQuery = '';
+        let isSearching = false;
+
+        async function fetchRestaurants(page = 1) {
+            currentPage = page;  // Update the current page
+            isSearching = false;
+            document.getElementById('back-to-list').style.display = 'none';  // Hide Back to List button
+            
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/restaurants?page=${page}&per_page=${perPage}`);
+                const data = await response.json();
+
+                // Display restaurant list
+                const restaurantList = document.getElementById('restaurant-list');
+                if (data.restaurants.length === 0) {
+                    restaurantList.innerHTML = '<p>No results found.</p>';
+                } else {
+                    restaurantList.innerHTML = data.restaurants.map(restaurant => `
+                        <div class="restaurant">
+                            <h2><a href="restaurant.html?id=${restaurant['Restaurant ID']}">${restaurant['Restaurant Name']}</a></h2>
+                            <p>${restaurant['City']}</p>
+                        </div>
+                    `).join('');
+                }
+
+                // Display pagination controls
+                const pagination = document.getElementById('pagination');
+                const totalCount = data.total_count;
+                const pageCount = Math.ceil(totalCount / perPage);
+
+                //  pagination controls
+                let paginationControls = '';
+
+                // Show Previous button to except 1stpage
+                if (currentPage > 1) {
+                    paginationControls += `<a href="#" onclick="fetchRestaurants(${currentPage - 1})">Previous</a>`;
+                } else {
+                    paginationControls += `<a href="#" class="disabled">Previous</a>`;
+                }
+
+                // Show the first page number and ....
+                if (pageCount > 1) {
+                    paginationControls += `<a href="#" onclick="fetchRestaurants(1)" class="${currentPage === 1 ? 'active' : ''}">1</a>`;
+                }
+
+                if (currentPage > 3) {
+                    paginationControls += `<span>...</span>`;
+                }
+
+                // Show page numbers 2 back and 2 front around the current page
+                for (let i = Math.max(currentPage - 2, 2); i <= Math.min(currentPage + 2, pageCount - 1); i++) {
+                    paginationControls += `<a href="#" onclick="fetchRestaurants(${i})" class="${i === currentPage ? 'active' : ''}">${i}</a>`;
+                }
+
+                // Show ellipsis if there is a gap between the current page and the last page
+                if (currentPage < pageCount - 2) {
+                    paginationControls += `<span>...</span>`;
+                }
+
+                // Show the last page number
+                if (pageCount > 1) {
+                    paginationControls += `<a href="#" onclick="fetchRestaurants(${pageCount})" class="${currentPage === pageCount ? 'active' : ''}">${pageCount}</a>`;
+                }
+
+                // Show Next button only if not on the last page
+                if (currentPage < pageCount) {
+                    paginationControls += `<a href="#" onclick="fetchRestaurants(${currentPage + 1})">Next</a>`;
+                } else {
+                    paginationControls += `<a href="#" class="disabled">Next</a>`;
+                }
+
+                pagination.innerHTML = paginationControls;
+            } catch (error) {
+                console.error('Error fetching restaurants:', error);
+            }
+        }
+
+        async function searchRestaurants() {
+            searchQuery = document.getElementById('search-input').value;
+            isSearching = true;
+            document.getElementById('back-to-list').style.display = 'inline';  // Show Back to List button
+            
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/restaurants/search?query=${encodeURIComponent(searchQuery)}`);
+                const data = await response.json();
+
+                // Display restaurant list
+                const restaurantList = document.getElementById('restaurant-list');
+                if (data.length === 0) {
+                    restaurantList.innerHTML = '<p style="color: white;size:25px"><strong>No results found.</strong></p>';
+                } else {
+                    restaurantList.innerHTML = data.map(restaurant => `
+                        <div class="restaurant">
+                            <h2><a href="restaurant.html?id=${restaurant['Restaurant ID']}">${restaurant['Restaurant Name']}</a></h2>
+                            <p>${restaurant['City']}</p>
+                        </div>
+                    `).join('');
+                }
+
+               //hide page for search
+                const pagination = document.getElementById('pagination');
+                pagination.innerHTML = '';
+
+            } catch (error) {
+                console.error('Error searching restaurants:', error);
+            }
+        }
+
+        function showList() {
+            document.getElementById('search-input').value = ''; 
+            fetchRestaurants(); 
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter') {
+                searchRestaurants();
+            }
+        }
+
+      
+        fetchRestaurants();
+    </script>
+</body>
+</html>

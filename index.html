@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Zomato</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url("https://zomato-landing-page.netlify.app/Images/Nav.jpg");
+            background-size: 100% 100%;
+            background-attachment: fixed;
+            color: white;
+        }
+        .content {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6); /* Semi-transparent background for better readability */
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            animation: fadeInDown 2s ease-out;
+        }
+        p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            animation: fadeInUp 2s ease-out;
+        }
+        .link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: red;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+        }
+        .link:hover {
+            background-color: black;
+        }
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            p {
+                font-size: 1em;
+            }
+            .link {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <header>
+            <h1>Welcome to Zomato</h1>
+        </header>
+        <main>
+            <p>Something great awaits you. Click the link below to explore!</p>
+            <a href="list.html" class="link">Restaurant List</a>
+        </main>
+    </div>
+</body>
+</html>
